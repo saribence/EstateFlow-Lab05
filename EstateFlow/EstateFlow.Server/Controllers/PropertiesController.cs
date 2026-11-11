@@ -72,6 +72,24 @@ namespace EstateFlow.Server.Controllers
             return Ok(meters);
         }
 
+        [HttpGet("{id:guid}/images")]
+        public async Task<ActionResult<IEnumerable<PropertyImageResponse>>> GetPropertyImages(Guid id)
+        {
+            var exists = await _context.Properties.AnyAsync(p => p.Id == id);
+            if (!exists)
+            {
+                return NotFound();
+            }
+
+            var images = await _context.PropertyImages
+                .Where(i => i.PropertyId == id)
+                .OrderBy(i => i.UploadedAt)
+                .ProjectToType<PropertyImageResponse>()
+                .ToListAsync();
+
+            return Ok(images);
+        }
+
         // POST: api/properties
         [HttpPost]
         public async Task<ActionResult<PropertyResponse>> CreateProperty(CreatePropertyRequest request)
